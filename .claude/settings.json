@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm --version)",
+      "Bash(npx create-next-app@latest . --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --yes)",
+      "Bash(del readme.md)",
+      "Bash(Remove-Item \"c:\\\\Users\\\\AshutoshKumarGautam\\\\Desktop\\\\student_creator\\\\readme.md\" -Force)",
+      "PowerShell(Invoke-RestMethod -Uri \"http://localhost:3001/api/ping\" -Method GET)",
+      "PowerShell(& \"C:\\\\Users\\\\AshutoshKumarGautam\\\\AppData\\\\Roaming\\\\npm\\\\ngrok.cmd\" http 3000 2>&1)",
+      "PowerShell(Invoke-RestMethod \"http://localhost:3000/api/ping\")"
+    ]
+  }
+}
