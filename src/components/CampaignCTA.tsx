@@ -42,7 +42,7 @@ export function HeroCTA() {
           rounded-lg border border-white/25 bg-white/8 px-7 text-base font-semibold
           text-white transition hover:bg-white/15 hover:border-white/50
           w-full sm:w-auto">
-        <Play size={16} /> View SOP
+        <Play size={16} /> View Guide
       </Link>
     </div>
   );

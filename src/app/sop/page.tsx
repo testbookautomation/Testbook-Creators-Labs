@@ -14,7 +14,7 @@ const steps = [
   { icon: Heart,         color: "#e11d48", title: "Share Your Experience",         desc: "Speak naturally and authentically. Share a personal moment or result. Viewers trust real stories, not scripted ads." },
   { icon: Megaphone,     color: "#8b5cf6", title: "Give a Strong Message",         desc: "End with an encouraging call-to-action for other aspirants. Tell them why they should try Testbook Pass today." },
   { icon: Upload,        color: "#0891b2", title: "Upload on Creators Lab",        desc: "Upload it on Creators Lab by tapping + Submit Video on the homepage. No need to post it on YouTube or Instagram. Just upload directly on the portal and we'll handle the rest." },
-  { icon: CheckCircle,   color: "#16a34a", title: "Wait for Approval",             desc: "Our team reviews every video within 48 hours. You'll get notified once it's approved or if anything needs fixing." },
+  { icon: CheckCircle,   color: "#16a34a", title: "Wait for Approval",             desc: "Our team reviews your video and notifies you once it's approved or if anything needs fixing." },
 ];
 
 const specs = [

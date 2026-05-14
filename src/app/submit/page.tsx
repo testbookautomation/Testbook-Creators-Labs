@@ -175,7 +175,7 @@ function SubmitForm() {
           </div>
           <h2 className="text-2xl font-black text-slate-900 mb-2">Video Submitted!</h2>
           <p className="text-slate-500 text-sm leading-relaxed mb-6">
-            Your video is now <strong>under review</strong>. Our team will check your submission and update the status within <strong>24–48 hours</strong>.
+            Your video is now <strong>under review</strong>. Our team will check your submission and update the status on your dashboard.
           </p>
           <div className="bg-slate-50 rounded-2xl p-4 text-left text-sm text-slate-600 space-y-1.5 mb-6">
             <p className="font-bold text-slate-800 mb-2">What happens next?</p>
@@ -419,7 +419,9 @@ function SubmitForm() {
                   <input type="checkbox" checked={form.consent} onChange={e=>set("consent",e.target.checked)}
                     className="mt-0.5 w-4 h-4 accent-blue-700 shrink-0"/>
                   <span className="text-sm text-slate-600 leading-relaxed">
-                    I confirm this video is original, follows campaign guidelines, and I give Testbook permission to use it for promotional purposes. I accept the campaign&apos;s terms and conditions. <span className="text-red-500">*</span>
+                    I confirm this video is original, follows campaign guidelines, and I give Testbook permission to use it for promotional purposes. I have read and accept the{" "}
+                    <Link href="/terms" target="_blank" className="text-blue-700 font-bold hover:underline">Terms &amp; Conditions</Link>.{" "}
+                    <span className="text-red-500">*</span>
                   </span>
                 </label>
                 {errors.consent && <p className="text-red-500 text-xs flex items-center gap-1"><AlertTriangle size={11}/>{errors.consent}</p>}

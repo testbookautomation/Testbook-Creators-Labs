@@ -5,7 +5,7 @@ import Footer from "@/components/Footer";
 import {
   Lock, Video, Upload, CheckCircle, IndianRupee,
   Play, Star, Users, Clock, ChevronRight, TrendingUp,
-  AlertCircle, ArrowRight, Zap, Shield, Award, HelpCircle
+  AlertCircle, ArrowRight, Zap, Award, HelpCircle, Smartphone
 } from "lucide-react";
 import VideoTestimonials from "@/components/VideoTestimonials";
 
@@ -18,10 +18,9 @@ const steps = [
 ];
 
 const stats = [
-  { icon: Users, value: "10,000+", label: "Active creators" },
+  { icon: Users, value: "10K+", label: "Active creators" },
   { icon: TrendingUp, value: "Rs 500+", label: "Average earning" },
-  { icon: Clock, value: "48 hrs", label: "Review window" },
-  { icon: Shield, value: "100%", label: "Verified flow" },
+  { icon: Clock, value: "Timely", label: "Approvals" },
 ];
 
 const tiers = [
@@ -52,7 +51,7 @@ export default function HomePage() {
             </div>
 
             <h1 className="text-[32px] sm:text-5xl lg:text-[56px] font-black leading-[1.08] sm:leading-[1.05] tracking-tight max-w-2xl">
-              Earn by creating videos for Testbook Pass
+              Earn by Sharing your Stories with fellow Aspirants!
             </h1>
             <p className="text-sm sm:text-lg text-blue-100 mt-4 sm:mt-5 leading-relaxed max-w-xl">
               Share your preparation story, help other aspirants discover Testbook Pass, and receive verified campaign payouts when your video performs.
@@ -67,7 +66,7 @@ export default function HomePage() {
               </Link>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mt-7 sm:mt-10 max-w-2xl">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 mt-7 sm:mt-10 max-w-2xl">
               {stats.map(({ icon: Icon, value, label }) => (
                 <div key={label} className="border border-white/15 bg-white/10 px-3 py-3 sm:px-4 sm:py-4 rounded-lg">
                   <Icon size={17} className="mb-2 sm:mb-3 text-orange-200" />
@@ -83,14 +82,13 @@ export default function HomePage() {
               <div className="bg-slate-50 border border-slate-100 rounded-lg px-3 py-2">
                 <Image src="/testbook-logo.png" alt="Testbook" width={4500} height={913} className="h-7 sm:h-8 w-auto" priority />
               </div>
-              <span className="badge badge-green">Live</span>
             </div>
 
             <div className="py-5 sm:py-6 border-b border-slate-100">
               <p className="text-[11px] sm:text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Creator brief</p>
-              <h2 className="text-xl sm:text-2xl font-black text-slate-950">Publish one clear, authentic short video.</h2>
+              <h2 className="text-xl sm:text-2xl font-black text-slate-950">Tell your prep story in one short video.</h2>
               <p className="text-sm text-slate-500 leading-relaxed mt-2">
-                Explain your exam preparation challenge, introduce Testbook Pass, and guide aspirants to try it.
+                Talk about the exam challenge you faced, how Testbook Pass helped, and why other aspirants should try it. Keep it real — no scripts, just your experience.
               </p>
             </div>
 
@@ -101,11 +99,14 @@ export default function HomePage() {
               </div>
               <div>
                 <p className="text-xs text-slate-400 font-bold mb-1">Format</p>
-                <p className="text-base sm:text-lg font-black">9:16 public</p>
+                <p className="flex items-center gap-2 text-base sm:text-lg font-black">
+                  <Smartphone size={18} className="text-blue-600" />
+                  9:16 vertical
+                </p>
               </div>
               <div>
                 <p className="text-xs text-slate-400 font-bold mb-1">Review</p>
-                <p className="text-base sm:text-lg font-black">24-48 hrs</p>
+                <p className="text-base sm:text-lg font-black">Timely approvals</p>
               </div>
               <div>
                 <p className="text-xs text-slate-400 font-bold mb-1">Payout</p>
@@ -114,7 +115,7 @@ export default function HomePage() {
             </div>
 
             <div className="pt-5 space-y-3">
-              {["Mention Testbook Pass by name", "Use clear audio and a public video link", "Keep UPI updated in the Testbook app"].map((item) => (
+              {["Mention Testbook Pass by name", "Use clear audio and upload directly", "Keep UPI updated in the Testbook app"].map((item) => (
                 <div key={item} className="flex items-center gap-3 text-sm font-semibold text-slate-700">
                   <CheckCircle size={16} className="text-emerald-600 shrink-0" />
                   {item}

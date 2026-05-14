@@ -29,7 +29,7 @@ interface StatusCfg {
 }
 
 const STATUS: Record<Status, StatusCfg> = {
-  "Submitted":           { badge:"badge-blue",   icon:Upload,       iconColor:"#2563eb", bg:"bg-blue-50",   border:"border-blue-200",   title:"Video Submitted",          desc:"Your video has been received. Our team will start the review soon.", next:"Sit tight — review usually takes 24–48 hours." },
+  "Submitted":           { badge:"badge-blue",   icon:Upload,       iconColor:"#2563eb", bg:"bg-blue-50",   border:"border-blue-200",   title:"Video Submitted",          desc:"Your video has been received. Our team will start the review soon.", next:"Sit tight — you will be notified once the review is complete." },
   "Under Review":        { badge:"badge-yellow",  icon:Clock,        iconColor:"#b45309", bg:"bg-amber-50",  border:"border-amber-200",  title:"Under Review",             desc:"Our team is actively reviewing your video for quality and guideline compliance.", next:"You will be notified once the review is complete." },
   "Approved":            { badge:"badge-green",   icon:CheckCircle2, iconColor:"#16a34a", bg:"bg-emerald-50",border:"border-emerald-200",title:"Video Approved!",          desc:"Great news! Your video passed review. We are now tracking its performance.", next:"Keep promoting your video to hit the view target." },
   "Rejected":            { badge:"badge-red",     icon:XCircle,      iconColor:"#dc2626", bg:"bg-red-50",    border:"border-red-200",    title:"Video Rejected",           desc:"Your video was not approved this time. Check the reason below.", next:"Fix the issue and submit a new video." },
