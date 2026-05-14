@@ -10,7 +10,7 @@ import {
   Globe, TrendingUp, RefreshCw
 } from "lucide-react";
 import { YoutubeIcon, InstagramIcon, FacebookIcon } from "@/components/BrandIcons";
-import { fetchStatus, trackEvent, EV } from "@/lib/api";
+import { fetchStatus, fetchUpi, trackEvent, EV } from "@/lib/api";
 
 type Status =
   | "Submitted" | "Under Review" | "Approved" | "Rejected"
@@ -34,8 +34,8 @@ const STATUS: Record<Status, StatusCfg> = {
   "Approved":            { badge:"badge-green",   icon:CheckCircle2, iconColor:"#16a34a", bg:"bg-emerald-50",border:"border-emerald-200",title:"Video Approved!",          desc:"Great news! Your video passed review. We are now tracking its performance.", next:"Keep promoting your video to hit the view target." },
   "Rejected":            { badge:"badge-red",     icon:XCircle,      iconColor:"#dc2626", bg:"bg-red-50",    border:"border-red-200",    title:"Video Rejected",           desc:"Your video was not approved this time. Check the reason below.", next:"Fix the issue and submit a new video." },
   "Metrics Pending":     { badge:"badge-purple",  icon:TrendingUp,   iconColor:"#7c3aed", bg:"bg-purple-50", border:"border-purple-200", title:"Tracking Views",           desc:"Your video is approved and we are monitoring its performance. Keep sharing it!", next:"Share on more platforms to reach the view target faster." },
-  "Eligible for Payout": { badge:"badge-green",   icon:IndianRupee,  iconColor:"#16a34a", bg:"bg-emerald-50",border:"border-emerald-200",title:"Eligible for Payout!",     desc:"🎉 Your video crossed the view target. Payout is being processed now.", next:"Your UPI payout will be credited within 24–48 working hours." },
-  "Payout Processing":   { badge:"badge-indigo",  icon:Loader2,      iconColor:"#4338ca", bg:"bg-indigo-50", border:"border-indigo-200", title:"Payout Processing",        desc:"Your payout is being processed via Razorpay. Almost there!", next:"Check your UPI account. If not received in 48 hours, contact support." },
+  "Eligible for Payout": { badge:"badge-green",   icon:IndianRupee,  iconColor:"#16a34a", bg:"bg-emerald-50",border:"border-emerald-200",title:"Eligible for Payout!",     desc:"🎉 Your video crossed the view target. Payout is being processed now.", next:"Your UPI payout will be credited within 5-7 working days." },
+  "Payout Processing":   { badge:"badge-indigo",  icon:Loader2,      iconColor:"#4338ca", bg:"bg-indigo-50", border:"border-indigo-200", title:"Payout Processing",        desc:"Your payout is being processed via Razorpay. Almost there!", next:"Check your UPI account. If not received in 5-7 working days, contact support." },
   "Payout Completed":    { badge:"badge-green",   icon:ShieldCheck,  iconColor:"#16a34a", bg:"bg-emerald-50",border:"border-emerald-200",title:"Payout Completed!",        desc:"Money has been successfully credited to your UPI ID. Congratulations!", next:"Thank you for participating! Look out for the next campaign." },
   "Payout Failed":       { badge:"badge-red",     icon:AlertTriangle,iconColor:"#dc2626", bg:"bg-red-50",    border:"border-red-200",    title:"Payout Failed",            desc:"Payout could not be processed — likely due to an invalid UPI ID.", next:"Update your UPI in Testbook app and contact our support team." },
 };
@@ -55,6 +55,7 @@ const DEMO = {
   name:"Rahul Verma", phone:"9876543210", userId:"66abc855oil",
   examCategory:"SSC CGL", platform:"YouTube Shorts",
   videoLink:"https://youtube.com/shorts/example",
+  cdnUrl:"",
   socialHandle:"@rahulverma",
   status:"Under Review" as Status,
   submittedAt: new Date(Date.now() - 5 * 3600000).toISOString(),
@@ -67,6 +68,7 @@ export default function DashboardPage() {
   const [status, setStatus] = useState<Status>("Under Review");
   const [isDemo, setIsDemo] = useState(true);
   const [fetching, setFetching] = useState(false);
+  const [vpa, setVpa] = useState<string | null>(null);
 
   useEffect(() => {
     const load = async () => {
@@ -85,6 +87,9 @@ export default function DashboardPage() {
       const phone  = local?.phone  || (user ? JSON.parse(user).phone  : "");
       const userId = local?.userId || (user ? JSON.parse(user).userId : "");
       if (!phone && !userId) return;
+
+      // Fetch UPI in parallel with status
+      if (phone) fetchUpi(phone).then(({ vpa: v }) => { if (v) setVpa(v); });
 
       setFetching(true);
       const live = await fetchStatus(phone, userId);
@@ -271,9 +276,15 @@ export default function DashboardPage() {
             </div>
 
             <div className="bg-slate-50 rounded-xl p-3">
-              <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide mb-1">Video Link</p>
-              <a href={sub.videoLink} target="_blank" rel="noreferrer"
-                className="text-blue-700 text-sm font-semibold hover:underline break-all">{sub.videoLink}</a>
+              <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide mb-1">
+                {sub.videoLink || sub.cdnUrl ? "Video" : "Uploaded File"}
+              </p>
+              {sub.videoLink || sub.cdnUrl ? (
+                <a href={sub.videoLink || sub.cdnUrl} target="_blank" rel="noreferrer"
+                  className="text-blue-700 text-sm font-semibold hover:underline break-all">{sub.videoLink || sub.cdnUrl}</a>
+              ) : (
+                <p className="text-sm font-semibold text-slate-700">Video file uploaded for review</p>
+              )}
             </div>
           </div>
 
@@ -345,12 +356,23 @@ export default function DashboardPage() {
                 )}
               </div>
 
-              {status !== "Submitted" && status !== "Under Review" && (
-                <div className="bg-slate-50 rounded-2xl p-4">
-                  <p className="text-[11px] text-slate-400 font-semibold uppercase tracking-wide mb-0.5">UPI ID (masked)</p>
-                  <p className="text-sm font-bold text-slate-900">rahul****@upi</p>
+              {vpa ? (
+                <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 flex items-center gap-3">
+                  <CheckCircle2 size={16} className="text-emerald-600 shrink-0"/>
+                  <div>
+                    <p className="text-[11px] text-emerald-700 font-semibold uppercase tracking-wide mb-0.5">UPI ID</p>
+                    <p className="text-sm font-black text-emerald-900">{vpa}</p>
+                  </div>
                 </div>
-              )}
+              ) : !isDemo && status !== "Submitted" && status !== "Under Review" ? (
+                <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-start gap-3">
+                  <AlertTriangle size={16} className="text-amber-600 shrink-0 mt-0.5"/>
+                  <div>
+                    <p className="text-sm font-bold text-amber-800">UPI ID not found</p>
+                    <p className="text-xs text-amber-700 mt-0.5">Update your UPI in the Testbook app to receive payouts.</p>
+                  </div>
+                </div>
+              ) : null}
 
               {status === "Payout Processing" && (
                 <div className="bg-indigo-50 border border-indigo-200 rounded-2xl p-4">
@@ -358,7 +380,7 @@ export default function DashboardPage() {
                     <Loader2 size={15} className="text-indigo-600 spinner"/>
                     <p className="font-bold text-indigo-800 text-sm">Processing via Razorpay</p>
                   </div>
-                  <p className="text-indigo-700 text-xs">Ref: RZP-2025XXXXXX · Expected within 24–48 working hours.</p>
+                  <p className="text-indigo-700 text-xs">Ref: RZP-2025XXXXXX · Expected within 5-7 working days.</p>
                 </div>
               )}
 
@@ -392,7 +414,7 @@ export default function DashboardPage() {
           {/* ── Quick actions ── */}
           <div className="grid grid-cols-3 gap-3">
             {[
-              { href:"/sop",    icon:BookOpen,   label:"SOP Guide",  sub:"Creation guide" },
+              { href:"/sop",    icon:BookOpen,   label:"Guide",      sub:"Creation guide" },
               { href:"/submit", icon:Upload,     label:"Submit",     sub:"New video" },
               { href:"mailto:creator-support@testbook.com", icon:Headphones, label:"Support", sub:"Get help" },
             ].map(({ href, icon:Ic, label, sub:s }) => (

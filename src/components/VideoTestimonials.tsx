@@ -179,7 +179,7 @@ export default function VideoTestimonials() {
             Real Stories
           </span>
           <h2 className="text-2xl sm:text-3xl font-black text-slate-900 mt-3 mb-2">
-            Students Who Already Earned
+            Watch Videos made by your Fellow Aspirants
           </h2>
           <p className="text-slate-500 text-sm max-w-md mx-auto">
             Watch how students just like you created videos and got paid — real submissions, real payouts.

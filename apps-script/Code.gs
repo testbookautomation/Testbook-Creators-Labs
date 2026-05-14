@@ -12,6 +12,10 @@
 // ─────────────────────────────────────────────────────────────
 
 const SECRET_TOKEN     = "TB_UGC_SECRET_2025"; // Must match .env.local
+const LMS_EMAIL        = "learning@testbook.com";
+const LMS_PASSWORD     = "learning!@#book";
+const LMS_LOGIN_URL    = "https://lms-api.testbook.com/api/v2/admin/login";
+const LMS_PRESIGNED_URL_API = "https://lms-api.testbook.com/api/v2/pre-signed-upload?language=All";
 const WEBENGAGE_API_KEY    = ""; // Optional
 const WEBENGAGE_ACCOUNT_ID = ""; // Optional
 
@@ -60,20 +64,30 @@ function handleSubmit(data) {
     "Exam Category","Platform","Video Link","Social Handle","Caption",
     "UPI Confirm","Status","Rejection Reason","Approved By","Approved At",
     "Views","Likes","Comments","Payout Eligibility","Payout Amount",
-    "Payout Status","Razorpay ID","Drive Link"
+    "Payout Status","Razorpay ID","CDN URL"
+  ]);
+  ensureHeaders(sheet, [
+    "Submission ID","Submitted At","User ID","Phone","Name","Email",
+    "Exam Category","Platform","Video Link","Social Handle","Caption",
+    "UPI Confirm","Status","Rejection Reason","Approved By","Approved At",
+    "Views","Likes","Comments","Payout Eligibility","Payout Amount",
+    "Payout Status","Razorpay ID","CDN URL"
   ]);
 
   // Block duplicate: same phone OR same video link
   const existing = sheet.getDataRange().getValues();
   for (let i = 1; i < existing.length; i++) {
     if (String(existing[i][3]) === String(data.phone) ||
-        String(existing[i][8]) === String(data.videoLink)) {
+        (data.videoLink && String(existing[i][8]) === String(data.videoLink))) {
       return { success: false, error: "duplicate" };
     }
   }
 
   const id  = makeId("TB");
   const now = new Date().toISOString();
+  const uploadResult = uploadStudentVideoToLms(data, id);
+  const cdnUrl = uploadResult ? uploadResult.cdnUrl : "";
+  const videoLink = data.videoLink || cdnUrl || "";
 
   sheet.appendRow([
     id, now,
@@ -83,13 +97,13 @@ function handleSubmit(data) {
     data.email        || "",
     data.examCategory || "",
     data.platform     || "",
-    data.videoLink    || "",
+    videoLink,
     data.socialHandle || "",
     data.caption      || "",
     data.upiConfirm ? "Yes" : "No",
     "Under Review", "", "", "",   // Status, Rejection, Approved by, Approved at
     0, 0, 0,                      // Views, Likes, Comments
-    "Not Eligible", 0, "Pending", "", ""  // Payout fields
+    "Not Eligible", 0, "Pending", "", cdnUrl  // Payout fields
   ]);
 
   upsertUser(data);
@@ -102,7 +116,131 @@ function handleSubmit(data) {
     });
   }
 
-  return { success: true, submissionId: id, status: "Under Review" };
+  return {
+    success: true,
+    submissionId: id,
+    status: "Under Review",
+    videoLink: videoLink,
+    cdnUrl: cdnUrl,
+    uploadStatus: uploadResult ? uploadResult.status : "SKIPPED"
+  };
+}
+
+function uploadStudentVideoToLms(data, submissionId) {
+  const base64 = data.videoBase64 || data.videoUploadBase64 || "";
+  if (!base64) return null;
+
+  const name = data.videoFileName || data.videoUploadName || (submissionId + ".mp4");
+  const mimeType = data.videoMimeType || data.videoUploadMimeType || "video/mp4";
+  const filename = cleanFileName(submissionId + "-" + (data.phone || "student") + "-" + name);
+  const bytes = Utilities.base64Decode(base64);
+  const blob = Utilities.newBlob(bytes, mimeType, filename);
+  return uploadBlobToLms(blob, filename);
+}
+
+function uploadBlobToLms(blob, filename) {
+  const cleanName = cleanFileName(filename);
+  const prefix = new Date().getTime() + "-" + cleanName;
+  const fileExt = getFileExt(cleanName);
+  const token = lmsLogin();
+  const presignedData = getLmsPresignedUrl(token, prefix, fileExt);
+  const uploadUrl = presignedData.data.uploadUrl;
+  const cdnUrl = fixUrl(presignedData.data.cdnUrl);
+
+  const uploadResponse = UrlFetchApp.fetch(uploadUrl, {
+    method: "post",
+    headers: {
+      "Accept": "application/json, text/plain, */*",
+      "Origin": "https://lms.testbook.com",
+      "Referer": "https://lms.testbook.com/",
+      "User-Agent": "Mozilla/5.0"
+    },
+    payload: { file: blob.setName(cleanName) },
+    muteHttpExceptions: true
+  });
+
+  const uploadStatus = uploadResponse.getResponseCode();
+  const uploadText = uploadResponse.getContentText();
+
+  if ([200, 201, 204].indexOf(uploadStatus) === -1) {
+    throw new Error("LMS CDN upload failed. Status: " + uploadStatus + " | " + uploadText);
+  }
+
+  return {
+    filename: cleanName,
+    cdnUrl: cdnUrl,
+    status: "SUCCESS",
+    statusCode: uploadStatus,
+    response: uploadText
+  };
+}
+
+function lmsLogin() {
+  const response = UrlFetchApp.fetch(LMS_LOGIN_URL, {
+    method: "post",
+    headers: {
+      "Accept": "*/*",
+      "Content-Type": "application/x-www-form-urlencoded",
+      "x-tb-client": "lm",
+      "User-Agent": "Mozilla/5.0"
+    },
+    payload: { email: LMS_EMAIL, password: LMS_PASSWORD },
+    muteHttpExceptions: true
+  });
+
+  const statusCode = response.getResponseCode();
+  const text = response.getContentText();
+  let data;
+
+  try {
+    data = JSON.parse(text);
+  } catch (err) {
+    throw new Error("LMS login response is not JSON. Status: " + statusCode + " | " + text);
+  }
+
+  if (!data.success) {
+    throw new Error("LMS login failed. Status: " + statusCode + " | " + JSON.stringify(data));
+  }
+  if (!data.data || !data.data.token) {
+    throw new Error("LMS login token missing. Response: " + JSON.stringify(data));
+  }
+
+  return data.data.token;
+}
+
+function getLmsPresignedUrl(token, prefix, fileExt) {
+  const response = UrlFetchApp.fetch(LMS_PRESIGNED_URL_API, {
+    method: "post",
+    headers: {
+      "Accept": "application/json, text/plain, */*",
+      "Authorization": "Bearer " + token,
+      "x-tb-client": "lm",
+      "Origin": "https://lms.testbook.com",
+      "Referer": "https://lms.testbook.com/",
+      "User-Agent": "Mozilla/5.0"
+    },
+    payload: { prefix: prefix, fileExt: fileExt },
+    muteHttpExceptions: true
+  });
+
+  const statusCode = response.getResponseCode();
+  const text = response.getContentText();
+  let data;
+
+  try {
+    data = JSON.parse(text);
+  } catch (err) {
+    throw new Error("LMS pre-signed response is not JSON. Status: " + statusCode + " | " + text);
+  }
+
+  if (!data.success) {
+    throw new Error("LMS pre-signed URL failed. Status: " + statusCode + " | " + JSON.stringify(data));
+  }
+  if (!data.data || !data.data.uploadUrl || !data.data.cdnUrl) {
+    throw new Error("LMS upload/CDN URL missing. Response: " + JSON.stringify(data));
+  }
+
+  return data;
 }
 
 // ── EVENT HANDLER ─────────────────────────────────────────────
@@ -161,6 +299,7 @@ function getStatus(phone, userId) {
           examCategory:    r[col("Exam Category")],
           platform:        r[col("Platform")],
           videoLink:       r[col("Video Link")],
+          cdnUrl:          col("CDN URL") >= 0 ? r[col("CDN URL")] : "",
           socialHandle:    r[col("Social Handle")],
           status:          r[col("Status")],
           rejectionReason: r[col("Rejection Reason")] || "",
@@ -199,6 +338,28 @@ function getOrCreate(name, headers) {
     sheet.setColumnWidths(1, headers.length, 155);
   }
   return sheet;
+}
+
+function ensureHeaders(sheet, headers) {
+  const lastColumn = Math.max(sheet.getLastColumn(), headers.length);
+  const existing = sheet.getRange(1, 1, 1, lastColumn).getValues()[0];
+  let changed = false;
+
+  for (let i = 0; i < headers.length; i++) {
+    if (existing[i] !== headers[i]) {
+      existing[i] = headers[i];
+      changed = true;
+    }
+  }
+
+  if (!changed) return;
+
+  const r = sheet.getRange(1, 1, 1, headers.length);
+  r.setValues([headers]);
+  r.setFontWeight("bold");
+  r.setBackground("#0f1c4d");
+  r.setFontColor("#ffffff");
+  sheet.setFrozenRows(1);
 }
 
 function upsertUser(data) {
@@ -262,6 +423,21 @@ function makeId(prefix) {
   return id;
 }
 
+function cleanFileName(filename) {
+  return String(filename).trim().replace(/[^\w.\-() ]/g, "_").slice(0, 160) || "student-video.mp4";
+}
+
+function getFileExt(filename) {
+  const i = filename.lastIndexOf(".");
+  return i === -1 ? "" : filename.substring(i);
+}
+
+function fixUrl(url) {
+  if (!url) return "";
+  if (url.startsWith("//")) return "https:" + url;
+  return url;
+}
+
 // ── RUN ONCE FROM EDITOR ──────────────────────────────────────
 
 function setupSheets() {
@@ -270,7 +446,7 @@ function setupSheets() {
     "Exam Category","Platform","Video Link","Social Handle","Caption",
     "UPI Confirm","Status","Rejection Reason","Approved By","Approved At",
     "Views","Likes","Comments","Payout Eligibility","Payout Amount",
-    "Payout Status","Razorpay ID","Drive Link"
+    "Payout Status","Razorpay ID","CDN URL"
   ]);
   getOrCreate(SHEETS.EVENTS,  ["Event ID","Timestamp","User ID","Phone","Event Name","Page","Platform","Payload","WE Forwarded","WE Response"]);
   getOrCreate(SHEETS.USERS,   ["User ID","Phone","Name","Email","Exam Category","First Seen","Last Seen","Submission Count"]);

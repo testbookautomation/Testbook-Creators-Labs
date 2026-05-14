@@ -1,16 +1,16 @@
 "use client";
 import { Suspense, useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import {
-  User, Phone, Mail, GraduationCap, Globe,
-  Link2, AtSign, FileText, Shield, AlertTriangle, CheckCircle2,
-  Loader2, ArrowLeft, ArrowRight, Upload, ChevronDown
+  User, Users, Phone, Mail, GraduationCap, Globe,
+  AtSign, FileText, Shield, AlertTriangle, CheckCircle2,
+  Loader2, ArrowLeft, ArrowRight, Upload, ChevronDown, X
 } from "lucide-react";
 import { YoutubeIcon, InstagramIcon, FacebookIcon } from "@/components/BrandIcons";
-import { submitVideo, trackEvent, EV } from "@/lib/api";
+import { submitVideo, trackEvent, fetchUpi, EV } from "@/lib/api";
 
 const examCategories = [
   "SSC CGL","SSC CHSL","SSC MTS","SSC CPO",
@@ -24,8 +24,11 @@ const platforms = [
   { id:"YouTube Shorts",  icon: YoutubeIcon,   color:"#ef4444" },
   { id:"Instagram Reels", icon: InstagramIcon,  color:"#e1306c" },
   { id:"Facebook Reels",  icon: FacebookIcon,   color:"#1877f2" },
+  { id:"Direct Upload",    icon: Upload,        color:"#2563eb" },
   { id:"Other",           icon: Globe,          color:"#64748b" },
 ];
+
+const MAX_VIDEO_BYTES = 50 * 1024 * 1024;
 
 function Field({ label, required, error, children }: { label: string; required?: boolean; error?: string; children: React.ReactNode }) {
   return (
@@ -40,34 +43,43 @@ function Field({ label, required, error, children }: { label: string; required?:
 }
 
 function SubmitForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
 
   const [form, setForm] = useState({
     name:"", phone:"", userId:"", email:"",
-    examCategory:"", platform:"", videoLink:"",
+    examCategory:"", platform:"", followers:"",
     socialHandle:"", caption:"", consent:false, upiConfirm:false,
   });
-  const [upi, setUpi] = useState<"checking"|"found"|"missing"|null>(null);
+  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [upi, setUpi]   = useState<"checking"|"found"|"missing"|null>(null);
+  const [vpa, setVpa]   = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<Record<string,string>>({});
+  const [loading, setLoading]     = useState(false);
+  const [errors, setErrors]       = useState<Record<string,string>>({});
 
+  // On mount — prefill phone/userId from URL or localStorage
   useEffect(() => {
     const p = searchParams.get("phone") || "";
     const u = searchParams.get("userid") || "";
     const stored = localStorage.getItem("tb_user");
     const s = stored ? JSON.parse(stored) : {};
-    setForm(f => ({
-      ...f,
-      phone: (p || s.phone || "").replace(/^(\+?91)?/,"").slice(0,10),
-      userId: u || s.userId || "",
-    }));
-    if (u || s.userId) {
-      setUpi("checking");
-      setTimeout(() => setUpi(Math.random() > 0.3 ? "found" : "missing"), 1600);
-    }
+    const phone = (p || s.phone || "").replace(/^(\+?91)?/,"").slice(0,10);
+    setForm(f => ({ ...f, phone, userId: u || s.userId || "" }));
   }, [searchParams]);
+
+  // Whenever phone hits 10 digits, look up real UPI from Testbook
+  useEffect(() => {
+    if (form.phone.length !== 10) { setUpi(null); setVpa(null); return; }
+    let cancelled = false;
+    setUpi("checking");
+    setVpa(null);
+    fetchUpi(form.phone).then(({ vpa: v, found }) => {
+      if (cancelled) return;
+      setVpa(v);
+      setUpi(found && v ? "found" : "missing");
+    });
+    return () => { cancelled = true; };
+  }, [form.phone]);
 
   const set = (k: string, v: string|boolean) => setForm(f => ({ ...f, [k]: v }));
 
@@ -77,7 +89,14 @@ function SubmitForm() {
     if (form.phone.length < 10)          e.phone = "Enter a valid 10-digit number";
     if (!form.examCategory)              e.examCategory = "Select your exam";
     if (!form.platform)                  e.platform = "Select a platform";
-    if (!form.videoLink.startsWith("http")) e.videoLink = "Enter a valid public URL";
+    if (form.platform && !form.followers)  e.followers = "Enter your follower/subscriber count";
+    if (!videoFile) {
+      e.videoFile = "Upload your video file";
+    } else if (!videoFile.type.startsWith("video/")) {
+      e.videoFile = "Upload a valid video file";
+    } else if (videoFile.size > MAX_VIDEO_BYTES) {
+      e.videoFile = "Video must be 50 MB or smaller";
+    }
     if (!form.consent)                   e.consent = "You must accept the terms to submit";
     return e;
   };
@@ -102,7 +121,9 @@ function SubmitForm() {
       email:        form.email,
       examCategory: form.examCategory,
       platform:     form.platform,
-      videoLink:    form.videoLink,
+      followers:    form.followers,
+      videoLink:    "",
+      videoFile:    videoFile,
       socialHandle: form.socialHandle,
       caption:      form.caption,
       upiConfirm:   form.upiConfirm,
@@ -130,6 +151,10 @@ function SubmitForm() {
     // Cache in localStorage for offline dashboard fallback
     localStorage.setItem("tb_submission", JSON.stringify({
       ...form,
+      videoLink: result.videoLink || "",
+      cdnUrl: result.cdnUrl || "",
+      videoFileName: videoFile?.name || "",
+      followers: form.followers,
       submissionId: result.submissionId,
       status: "Under Review",
       submittedAt: new Date().toISOString(),
@@ -193,20 +218,28 @@ function SubmitForm() {
         </div>
       </section>
 
-      {/* UPI alert banner */}
+      {/* UPI banner */}
+      {upi === "checking" && (
+        <div className="bg-slate-50 border-b border-slate-200 px-4 py-3">
+          <div className="max-w-xl mx-auto flex gap-2 text-sm items-center">
+            <Loader2 size={15} className="text-slate-400 spinner shrink-0"/>
+            <p className="text-slate-500">Checking UPI status…</p>
+          </div>
+        </div>
+      )}
       {upi === "missing" && (
         <div className="bg-amber-50 border-b border-amber-200 px-4 py-3">
           <div className="max-w-xl mx-auto flex gap-2 text-sm">
             <AlertTriangle size={16} className="text-amber-600 shrink-0 mt-0.5"/>
-            <p className="text-amber-800"><strong>UPI ID missing.</strong> Update it in the Testbook app before your video becomes payout-eligible.</p>
+            <p className="text-amber-800"><strong>UPI ID not found.</strong> Update it in the Testbook app before your video becomes payout-eligible.</p>
           </div>
         </div>
       )}
-      {upi === "found" && (
+      {upi === "found" && vpa && (
         <div className="bg-emerald-50 border-b border-emerald-200 px-4 py-3">
           <div className="max-w-xl mx-auto flex gap-2 text-sm">
             <CheckCircle2 size={16} className="text-emerald-600 shrink-0 mt-0.5"/>
-            <p className="text-emerald-800 font-semibold">UPI ID found — your account is payout-ready.</p>
+            <p className="text-emerald-800 font-semibold">UPI ready: <span className="font-black">{vpa}</span></p>
           </div>
         </div>
       )}
@@ -234,24 +267,18 @@ function SubmitForm() {
                   </div>
                 </Field>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <Field label="Phone Number" required error={errors.phone}>
-                    <div className={`input-field flex items-center gap-0 p-0 overflow-hidden ${errors.phone?"error":""}`}>
-                      <span className="flex items-center gap-1.5 px-3 py-3 text-slate-500 text-sm font-semibold bg-slate-50 border-r border-slate-200 shrink-0">
-                        <Phone size={13}/> +91
-                      </span>
-                      <input type="tel" value={form.phone} maxLength={10}
-                        onChange={e=>set("phone",e.target.value.replace(/\D/g,"").slice(0,10))}
-                        placeholder="98765 43210"
-                        className="flex-1 px-4 py-3 text-slate-900 text-[15px] bg-white outline-none min-h-0"/>
-                    </div>
-                  </Field>
-
-                  <Field label="Testbook User ID">
-                    <input type="text" value={form.userId} onChange={e=>set("userId",e.target.value)}
-                      placeholder="Auto-detected" className="input-field"/>
-                  </Field>
-                </div>
+                <Field label="Phone Number" required error={errors.phone}>
+                  <div className={`input-field flex items-center gap-0 p-0 overflow-hidden ${errors.phone?"error":""}`}>
+                    <span className="flex items-center gap-1.5 px-3 py-3 text-slate-500 text-sm font-semibold bg-slate-50 border-r border-slate-200 shrink-0">
+                      <Phone size={13}/> +91
+                    </span>
+                    <input type="tel" value={form.phone} maxLength={10}
+                      onChange={e=>set("phone",e.target.value.replace(/\D/g,"").slice(0,10))}
+                      placeholder="98765 43210"
+                      className="flex-1 px-4 py-3 text-slate-900 text-[15px] bg-white outline-none min-h-0"/>
+                  </div>
+                </Field>
+                <input type="hidden" value={form.userId} readOnly />
 
                 <Field label="Email ID (optional)">
                   <div className="input-field flex items-center gap-2 p-0" style={{padding:0}}>
@@ -286,29 +313,65 @@ function SubmitForm() {
               </div>
 
               <div className="space-y-4">
+                <Field label="How many followers / subscribers do you have?" required error={errors.followers}>
+                  <div className={`input-field flex items-center gap-2 p-0 ${errors.followers?"error":""}`} style={{padding:0}}>
+                    <Users size={16} className="text-slate-400 ml-4 shrink-0"/>
+                    <input
+                      type="number"
+                      min="0"
+                      value={form.followers}
+                      onChange={e=>set("followers", e.target.value)}
+                      placeholder="e.g. 5000"
+                      className="flex-1 py-3 pr-4 text-slate-900 text-[15px] bg-white outline-none min-h-0"/>
+                  </div>
+                  <p className="text-[11px] text-slate-400 mt-1.5">Enter the approximate count from your social profile.</p>
+                </Field>
+
                 <Field label="Platform" required error={errors.platform}>
-                  <div className="grid grid-cols-2 gap-2">
-                    {platforms.map(({id, icon:Icon, color})=>(
-                      <button key={id} type="button" onClick={()=>set("platform",id)}
-                        className={`flex items-center gap-2.5 px-4 py-3 rounded-xl border-2 text-sm font-semibold transition-all
-                          ${form.platform===id?"border-blue-600 bg-blue-50 text-blue-700":"border-slate-200 text-slate-600 hover:border-slate-300 bg-white"}`}>
-                        {id === "Other"
-                          ? <Globe size={17} color={form.platform===id ? "#1d4ed8" : color}/>
-                          : <Icon size={17} color={form.platform===id ? "#1d4ed8" : color}/>}
-                        <span className="leading-tight">{id}</span>
-                      </button>
-                    ))}
+                  <div className={`input-field flex items-center gap-2 p-0 ${errors.platform?"error":""}`} style={{padding:0}}>
+                    <Globe size={16} className="text-slate-400 ml-4 shrink-0"/>
+                    <select
+                      value={form.platform}
+                      onChange={e=>set("platform", e.target.value)}
+                      className="flex-1 py-3 pr-4 text-slate-900 text-[15px] bg-white outline-none min-h-0 appearance-none cursor-pointer">
+                      <option value="">Select your platform</option>
+                      {platforms.map(({id})=>(
+                        <option key={id} value={id}>{id}</option>
+                      ))}
+                    </select>
+                    <ChevronDown size={16} className="text-slate-400 mr-4 shrink-0"/>
                   </div>
                 </Field>
 
-                <Field label="Video Link (Public URL)" required error={errors.videoLink}>
-                  <div className={`input-field flex items-center gap-2 p-0 ${errors.videoLink?"error":""}`} style={{padding:0}}>
-                    <Link2 size={16} className="text-slate-400 ml-4 shrink-0"/>
-                    <input type="url" value={form.videoLink} onChange={e=>set("videoLink",e.target.value)}
-                      placeholder="https://youtube.com/shorts/..."
-                      className="flex-1 py-3 pr-4 text-slate-900 text-[15px] bg-white outline-none min-h-0"/>
-                  </div>
-                  <p className="text-[11px] text-slate-400 mt-1.5">Paste the public link of your posted video.</p>
+                <Field label="Video Upload" required error={errors.videoFile}>
+                  <label className={`flex min-h-28 cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed px-4 py-5 text-center transition-colors ${
+                    errors.videoFile ? "border-red-300 bg-red-50" : "border-slate-300 bg-slate-50 hover:border-blue-300 hover:bg-blue-50"
+                  }`}>
+                    <input
+                      type="file"
+                      accept="video/mp4,video/quicktime,video/webm,video/*"
+                      className="sr-only"
+                      onChange={e => {
+                        const file = e.target.files?.[0] ?? null;
+                        setVideoFile(file);
+                        setErrors(prev => ({ ...prev, videoFile:"" }));
+                      }}
+                    />
+                    <Upload size={24} className="mb-2 text-blue-600"/>
+                    <span className="text-sm font-black text-slate-900">Choose video file</span>
+                    <span className="mt-1 text-xs text-slate-500">MP4, MOV, or WEBM up to 50 MB</span>
+                  </label>
+                  {videoFile && (
+                    <div className="mt-2 flex items-center gap-2 rounded-lg bg-blue-50 px-3 py-2 text-sm">
+                      <Upload size={14} className="text-blue-600 shrink-0"/>
+                      <span className="min-w-0 flex-1 truncate font-semibold text-blue-900">{videoFile.name}</span>
+                      <span className="text-xs text-blue-600">{(videoFile.size / (1024 * 1024)).toFixed(1)} MB</span>
+                      <button type="button" aria-label="Remove video file" onClick={() => setVideoFile(null)} className="rounded-md p-1 text-blue-700 hover:bg-blue-100">
+                        <X size={14}/>
+                      </button>
+                    </div>
+                  )}
+                  <p className="text-[11px] text-slate-400 mt-1.5">Uploaded files are saved to the LMS CDN for review.</p>
                 </Field>
 
                 <Field label="Your Social Handle (optional)">

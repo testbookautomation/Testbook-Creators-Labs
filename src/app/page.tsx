@@ -3,20 +3,18 @@ import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import {
-  Smartphone, Lock, Video, Upload, CheckCircle, IndianRupee,
+  Lock, Video, Upload, CheckCircle, IndianRupee,
   Play, Star, Users, Clock, ChevronRight, TrendingUp,
   AlertCircle, ArrowRight, Zap, Shield, Award, HelpCircle
 } from "lucide-react";
-import { YoutubeIcon, InstagramIcon, FacebookIcon } from "@/components/BrandIcons";
 import VideoTestimonials from "@/components/VideoTestimonials";
 
 const steps = [
-  { icon: Smartphone, num: "01", title: "Open campaign link", desc: "Use the Testbook app, banner, or notification link. Your phone and user ID can be pre-filled automatically." },
-  { icon: Lock, num: "02", title: "Verify account", desc: "Login with OTP so each submission is linked to a valid Testbook account." },
-  { icon: Video, num: "03", title: "Create your video", desc: "Record a 30-90 second reel or short explaining your exam prep journey and Testbook Pass experience." },
-  { icon: Upload, num: "04", title: "Submit for review", desc: "Post the video publicly, paste the link, and submit it for campaign review." },
-  { icon: CheckCircle, num: "05", title: "Get approved", desc: "The team reviews the video and starts tracking performance once it meets the guidelines." },
-  { icon: IndianRupee, num: "06", title: "Receive payout", desc: "Eligible videos are paid directly to UPI after they cross the required view milestone." },
+  { icon: Lock, num: "01", title: "Log in with your Testbook account", desc: "Verify your account so your video submission is linked to the right Testbook profile." },
+  { icon: Video, num: "02", title: "Record your prep journey", desc: "Record a 60 to 90-sec video about your exam preparation journey." },
+  { icon: Upload, num: "03", title: "Upload it on Creators Lab", desc: "Tap + Submit Video on the homepage and upload your video directly on the portal." },
+  { icon: CheckCircle, num: "04", title: "Wait for Approval", desc: "Our team reviews your video and notifies you once it is approved or if anything needs fixing." },
+  { icon: IndianRupee, num: "05", title: "Get paid directly to UPI", desc: "Eligible payouts are credited directly to your UPI account." },
 ];
 
 const stats = [
@@ -26,24 +24,18 @@ const stats = [
   { icon: Shield, value: "100%", label: "Verified flow" },
 ];
 
-const platforms = [
-  { icon: YoutubeIcon, name: "YouTube Shorts", tag: "Recommended", tagColor: "#ef4444" },
-  { icon: InstagramIcon, name: "Instagram Reels", tag: "Popular", tagColor: "#e1306c" },
-  { icon: FacebookIcon, name: "Facebook Reels", tag: "Accepted", tagColor: "#1877f2" },
-];
-
 const tiers = [
-  { views: "5,000+", earn: "Rs 200", label: "Starter", color: "border-l-slate-300" },
-  { views: "20,000+", earn: "Rs 500", label: "Standard", color: "border-l-blue-500", highlight: true },
-  { views: "1,00,000+", earn: "Rs 1,500+", label: "Viral", color: "border-l-orange-400" },
+  { views: "5,000+", base: "Rs 50", incentive: "Rs 200", label: "🚀 Boost Bonus", color: "border-l-slate-300" },
+  { views: "20,000+", base: "Rs 50", incentive: "Rs 500", label: "⭐ Growth Bonus", color: "border-l-blue-500", highlight: true },
+  { views: "1,00,000+", base: "Rs 50", incentive: "Rs 1,500+", label: "🔥 Viral Bonus", color: "border-l-orange-400" },
 ];
 
 const faqs = [
   { q: "Who can participate?", a: "Any registered Testbook user with an active account and a phone number linked to Testbook.com can join the campaign." },
   { q: "What should my video be about?", a: "Share your government exam preparation story, the problem you faced, how Testbook Pass helped, and why other aspirants should try it." },
-  { q: "When will I get paid?", a: "Once your video is approved and crosses the required view count, the payout is processed to your UPI ID within 24-48 working hours." },
+  { q: "When will I get paid?", a: "Once your video is approved and crosses the required view count, the payout is processed to your UPI ID within 5-7 working days." },
   { q: "My UPI ID is missing. What do I do?", a: "Update your UPI ID in the Testbook app under Profile and Payment Settings before your video becomes eligible for payout." },
-  { q: "Can I submit more than one video?", a: "Currently one submission per campaign is allowed. Follow the SOP carefully and submit your strongest video." },
+  { q: "Can I submit more than one video?", a: "Currently one submission per campaign is allowed. Follow the Guide carefully and submit your strongest video." },
 ];
 
 export default function HomePage() {
@@ -71,7 +63,7 @@ export default function HomePage() {
                 Start campaign <ArrowRight size={18} />
               </Link>
               <Link href="/sop" className="inline-flex items-center justify-center gap-2 min-h-12 rounded-lg border border-white/25 bg-white/5 px-7 text-base font-semibold text-white transition hover:bg-white/10 hover:border-white/50 w-full sm:w-auto">
-                <Play size={16} /> View SOP
+                <Play size={16} /> View Guide
               </Link>
             </div>
 
@@ -138,9 +130,8 @@ export default function HomePage() {
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6 sm:mb-8">
             <div>
               <span className="text-xs font-bold text-blue-700 bg-blue-50 px-3 py-1 rounded-full uppercase tracking-widest">Process</span>
-              <h2 className="text-[26px] sm:text-3xl font-black text-slate-950 mt-3">6 steps to start earning</h2>
+              <h2 className="text-[26px] sm:text-3xl font-black text-slate-950 mt-3">5 steps to start earning</h2>
             </div>
-            <p className="text-slate-500 text-sm max-w-md">A clear path from campaign login to video review and payout.</p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -169,7 +160,7 @@ export default function HomePage() {
               Keep the story practical, honest, and useful for government exam aspirants.
             </p>
             <Link href="/sop" className="inline-flex items-center gap-2 font-bold text-blue-700 hover:text-blue-900 text-sm mt-6">
-              View full SOP guide <ChevronRight size={16} />
+              View Guide <ChevronRight size={16} />
             </Link>
           </div>
 
@@ -179,28 +170,13 @@ export default function HomePage() {
               { icon: Zap, color: "text-orange-500", text: "Explain how Testbook Pass solved that problem" },
               { icon: Star, color: "text-yellow-500", text: "Share a genuine personal experience" },
               { icon: Users, color: "text-emerald-600", text: "Motivate other aspirants to begin" },
-              { icon: Award, color: "text-purple-600", text: "Add required hashtags and caption" },
+              { icon: Award, color: "text-purple-600", text: "Upload directly on Creators Lab" },
             ].map(({ icon: Icon, color, text }) => (
               <div key={text} className="card p-4 flex items-start gap-3">
                 <Icon size={18} className={`${color} shrink-0 mt-0.5`} strokeWidth={2} />
                 <p className="text-slate-700 text-sm font-semibold leading-relaxed">{text}</p>
               </div>
             ))}
-
-            <div className="card p-5 md:row-span-2">
-              <h3 className="font-bold text-slate-950 mb-4 text-[15px]">Supported platforms</h3>
-              <div className="space-y-3">
-                {platforms.map(({ icon: Icon, name, tag, tagColor }) => (
-                  <div key={name} className="flex items-center justify-between gap-3 border-b border-slate-100 last:border-0 pb-3 last:pb-0">
-                    <div className="flex items-center gap-3">
-                      <Icon size={22} color={tagColor} />
-                      <span className="font-semibold text-slate-800 text-sm">{name}</span>
-                    </div>
-                    <span className="text-[11px] font-bold text-white px-2.5 py-1 rounded-full" style={{ background: tagColor }}>{tag}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
           </div>
         </div>
       </section>
@@ -208,26 +184,26 @@ export default function HomePage() {
       <section className="py-10 sm:py-14 px-4 bg-white">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-10">
-            <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full uppercase tracking-widest">Payouts</span>
-            <h2 className="text-[26px] sm:text-3xl font-black text-slate-950 mt-3 mb-2">How much can you earn?</h2>
-            <p className="text-slate-500 text-sm max-w-sm mx-auto">Payouts are based on view count after your video is approved.</p>
+            <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full uppercase tracking-widest">Incentives</span>
+            <h2 className="text-[26px] sm:text-3xl font-black text-slate-950 mt-3 mb-2">Extra incentives</h2>
+            <p className="text-slate-500 text-sm max-w-sm mx-auto">Every approved video gets a base reward, plus extra incentives when it crosses view milestones.</p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-4">
-            {tiers.map(({ views, earn, label, color, highlight }) => (
+            {tiers.map(({ views, base, incentive, label, color, highlight }) => (
               <div key={label} className={`card border-l-4 ${color} p-5 ${highlight ? "ring-2 ring-blue-100" : ""}`}>
                 <div className="text-sm text-slate-400 font-bold mb-3">{label}</div>
                 <div className="font-bold text-slate-900 flex items-center gap-2 mb-5">
                   <TrendingUp size={15} className="text-blue-600" />
                   {views} views
                 </div>
-                <div className="text-3xl font-black text-blue-700">{earn}</div>
-                <div className="text-[11px] text-slate-400 mt-1">UPI payout</div>
+                <div className="text-3xl font-black text-blue-700">{base} + {incentive}</div>
+                <div className="text-[11px] text-slate-400 mt-1">Base reward + incentive</div>
               </div>
             ))}
           </div>
           <p className="text-xs text-slate-400 mt-4 text-center">
-            Payout amounts are indicative. Final eligibility is determined by campaign terms.
+            Incentives are paid over and above the Rs 50/video base reward. Final eligibility is determined by campaign terms.
           </p>
         </div>
       </section>
