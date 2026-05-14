@@ -2,9 +2,10 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Testbook Student Creator | Earn by Making Videos",
+  title: "Testbook Creator Lab | Earn by Making Videos",
   description: "Create short videos promoting Testbook Pass and earn money. Join India's student creator campaign.",
   manifest: "/manifest.json",
+  applicationName: "Testbook Creator Lab",
 };
 
 export const viewport: Viewport = {

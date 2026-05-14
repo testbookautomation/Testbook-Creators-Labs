@@ -22,7 +22,7 @@ const steps = [
 
 const stats = [
   { icon: Users,     value: "10,000+", label: "Active creators" },
-  { icon: TrendingUp,value: "Rs 500+", label: "Average earning" },
+  { icon: TrendingUp,value: "₹500+",   label: "Average earning" },
   { icon: Clock,     value: "48 hrs",  label: "Review window" },
   { icon: Shield,    value: "100%",    label: "Verified flow" },
 ];
@@ -254,7 +254,7 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-4">
+          <div className="grid sm:grid-cols-3 gap-4">
             {tiers.map(({ views, earn, label, accent, highlight }) => (
               <div key={label}
                 className={`card border-l-4 ${accent} p-5

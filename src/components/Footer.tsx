@@ -11,7 +11,7 @@ const links = [
 
 export default function Footer() {
   return (
-    <footer className="bg-slate-950 text-slate-400 mb-16 md:mb-0">
+    <footer className="bg-slate-950 text-slate-400">
       <div className="max-w-5xl mx-auto px-4 pt-12 pb-8">
         <div className="grid grid-cols-2 md:grid-cols-3 gap-8 mb-10">
 
@@ -26,7 +26,7 @@ export default function Footer() {
               </div>
               <span className="text-[10px] font-bold px-2 py-0.5 rounded-full text-white
                 bg-orange-500 tracking-wide uppercase">
-                Creator
+                Creator Lab
               </span>
             </div>
             <p className="text-sm leading-relaxed mb-4 text-slate-500">
@@ -82,7 +82,7 @@ export default function Footer() {
               <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-wide mb-1">
                 Campaign Domain
               </p>
-              <p className="text-blue-400 font-mono text-sm">ugc.testbook.com</p>
+              <p className="text-blue-400 font-mono text-sm">creatorlabs.testbook.com</p>
             </div>
           </div>
         </div>

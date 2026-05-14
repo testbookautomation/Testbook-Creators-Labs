@@ -290,10 +290,10 @@ export default function VideoTestimonials() {
               </div>
             </div>
 
-            {/* Phone video area */}
+            {/* Phone video area — fixed 9:16 portrait, centered in modal */}
             <div className={`relative bg-gradient-to-br ${active.thumbnailGradient}
-              overflow-hidden`}
-              style={{ aspectRatio: "9/16", maxHeight: "280px" }}>
+              overflow-hidden mx-auto`}
+              style={{ height: "280px", width: "157px" }}>
               <div className="absolute inset-0 opacity-10"
                 style={{
                   backgroundImage: "radial-gradient(white 1px, transparent 1px)",
