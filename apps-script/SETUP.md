@@ -87,6 +87,8 @@ After setup, 4 sheets are auto-created:
 
 **For reviewers:** Use the **Status** column dropdown to approve/reject. The student dashboard updates in real time.
 
+If a student uploads a video file instead of pasting a public URL, the script uploads it to the LMS CDN and stores the returned URL in the **CDN URL** column.
+
 ### Events
 Every user action on the website is logged here — page opens, OTP sent, video submitted, dashboard viewed, etc.
 
@@ -119,3 +121,5 @@ The URL stays the same — no need to update `.env.local`.
 | CORS error | Never call the webhook directly from browser — always go through `/api/*` routes |
 | `Script is running` delay | First request after idle can take 3–5s (cold start). Normal behaviour. |
 | 403 after re-deploy | Make sure **Who has access** is set to **Anyone** (not "Anyone with Google account") |
+
+// end here..

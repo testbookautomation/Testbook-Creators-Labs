@@ -8,7 +8,9 @@ export interface SubmitPayload {
   email?: string;
   examCategory: string;
   platform: string;
-  videoLink: string;
+  followers?: string;
+  videoLink?: string;
+  videoFile?: File | null;
   socialHandle?: string;
   caption?: string;
   upiConfirm: boolean;
@@ -32,6 +34,7 @@ export interface Submission {
   examCategory: string;
   platform: string;
   videoLink: string;
+  cdnUrl?: string;
   socialHandle: string;
   status: string;
   rejectionReason: string;
@@ -40,7 +43,22 @@ export interface Submission {
 }
 
 // ── Submit a video ────────────────────────────────────────────
-export async function submitVideo(data: SubmitPayload): Promise<{ success: boolean; submissionId?: string; error?: string }> {
+export async function submitVideo(data: SubmitPayload): Promise<{ success: boolean; submissionId?: string; videoLink?: string; cdnUrl?: string; error?: string }> {
+  if (data.videoFile) {
+    const form = new FormData();
+    Object.entries(data).forEach(([key, value]) => {
+      if (key === "videoFile" || value === undefined || value === null) return;
+      form.append(key, String(value));
+    });
+    form.append("videoFile", data.videoFile);
+
+    const res = await fetch("/api/submit", {
+      method: "POST",
+      body: form,
+    });
+    return res.json();
+  }
+
   const res = await fetch("/api/submit", {
     method:  "POST",
     headers: { "Content-Type": "application/json" },
@@ -74,6 +92,17 @@ export async function fetchStatus(phone: string, userId?: string): Promise<Submi
     return data?.submission ?? null;
   } catch {
     return null;
+  }
+}
+
+// ── Fetch UPI / VPA for a phone number ───────────────────────
+export async function fetchUpi(phone: string): Promise<{ vpa: string | null; found: boolean; name?: string }> {
+  try {
+    const res  = await fetch(`/api/fetch-upi?phone=${phone}`);
+    const data = await res.json();
+    return { vpa: data.vpa ?? null, found: !!data.found, name: data.name };
+  } catch {
+    return { vpa: null, found: false };
   }
 }
 
