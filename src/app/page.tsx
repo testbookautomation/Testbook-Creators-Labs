@@ -54,7 +54,7 @@ export default function HomePage() {
 
       {/* ── Hero ──────────────────────────────────────── */}
       <section className="tb-gradient text-white px-4 pt-10 pb-10 sm:pt-16 sm:pb-14">
-        <div className="max-w-6xl mx-auto grid lg:grid-cols-[1.08fr_.92fr] gap-8 sm:gap-12 items-center">
+        <div className="max-w-6xl mx-auto grid lg:grid-cols-[1.1fr_0.9fr] gap-8 lg:gap-12 items-center">
           <div>
             {/* Live badge */}
             <div className="inline-flex items-center gap-2 bg-white text-slate-900 rounded-full
@@ -63,7 +63,7 @@ export default function HomePage() {
               Official student creator campaign
             </div>
 
-            <h1 className="text-[30px] sm:text-5xl lg:text-[54px] font-black
+            <h1 className="text-[28px] sm:text-4xl md:text-5xl lg:text-[52px] font-black
               leading-[1.08] tracking-tight max-w-2xl">
               Earn by creating videos for{" "}
               <span className="text-transparent bg-clip-text"
@@ -73,7 +73,7 @@ export default function HomePage() {
                 Testbook Pass
               </span>
             </h1>
-            <p className="text-sm sm:text-lg text-blue-100 mt-4 sm:mt-5 leading-relaxed max-w-xl">
+            <p className="text-sm sm:text-base lg:text-lg text-blue-100 mt-4 sm:mt-5 leading-relaxed max-w-xl">
               Share your preparation story, help other aspirants discover Testbook Pass, and receive
               verified campaign payouts when your video performs.
             </p>
@@ -81,7 +81,7 @@ export default function HomePage() {
             <HeroCTA />
 
             {/* Stat grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mt-8 sm:mt-10 max-w-2xl">
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4 gap-2.5 mt-8 sm:mt-10">
               {stats.map(({ icon: Icon, value, label }) => (
                 <div key={label}
                   className="glass rounded-xl px-3 py-4 group
@@ -154,14 +154,14 @@ export default function HomePage() {
       {/* ── How it works ─────────────────────────────── */}
       <section className="py-12 sm:py-16 px-4 bg-white">
         <div className="max-w-6xl mx-auto">
-          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8 sm:mb-10">
+          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-3 mb-8 sm:mb-10">
             <div>
               <span className="section-tag text-blue-700 bg-blue-50">Process</span>
-              <h2 className="text-[26px] sm:text-3xl font-black text-slate-950 mt-3">
+              <h2 className="text-2xl sm:text-[26px] lg:text-3xl font-black text-slate-950 mt-3">
                 6 steps to start earning
               </h2>
             </div>
-            <p className="text-slate-500 text-sm max-w-sm">
+            <p className="text-slate-500 text-sm max-w-sm md:text-right">
               A clear path from campaign login to video review and payout.
             </p>
           </div>
@@ -186,10 +186,10 @@ export default function HomePage() {
 
       {/* ── Content guide ─────────────────────────────── */}
       <section className="py-12 sm:py-16 px-4 bg-[#f8fafc]">
-        <div className="max-w-6xl mx-auto grid lg:grid-cols-[.95fr_1.05fr] gap-10 items-start">
+        <div className="max-w-6xl mx-auto grid lg:grid-cols-[.95fr_1.05fr] gap-8 lg:gap-10 items-start">
           <div>
             <span className="section-tag text-orange-700 bg-orange-50">Content guide</span>
-            <h2 className="text-[26px] sm:text-3xl font-black text-slate-950 mt-3 mb-3">
+            <h2 className="text-2xl sm:text-[26px] lg:text-3xl font-black text-slate-950 mt-3 mb-3">
               What your video should include
             </h2>
             <p className="text-slate-500 text-sm leading-relaxed max-w-md">
