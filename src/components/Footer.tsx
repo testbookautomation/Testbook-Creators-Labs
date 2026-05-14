@@ -12,7 +12,7 @@ const links = [
 
 export default function Footer() {
   return (
-    <footer className="bg-slate-900 text-slate-400 mb-16 md:mb-0">
+    <footer className="bg-slate-950 text-slate-400">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-10 pb-8">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 lg:gap-12 mb-8">
 
@@ -28,8 +28,9 @@ export default function Footer() {
                   className="h-6 w-auto"
                 />
               </div>
-              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full text-white"
-                  style={{ background: "#f97316" }}>Creator</span>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full text-white bg-orange-500 tracking-wide uppercase">
+                Creator Lab
+              </span>
             </div>
             <p className="text-sm leading-relaxed mb-4 max-w-sm">
               Testbook&apos;s official student creator campaign — earn by promoting Testbook Pass through short videos.
@@ -69,6 +70,10 @@ export default function Footer() {
                 </a>
               </li>
             </ul>
+            <div className="mt-6 p-3 bg-slate-900 rounded-xl border border-slate-800">
+              <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-wide mb-1">Campaign Domain</p>
+              <p className="text-blue-400 font-mono text-sm">creatorlabs.testbook.com</p>
+            </div>
           </div>
         </div>
 

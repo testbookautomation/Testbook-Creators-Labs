@@ -66,8 +66,8 @@ export default function Navbar() {
               priority
               className="h-6 sm:h-7 w-auto"
             />
-            <span className="hidden sm:inline-flex text-[11px] font-bold px-2 py-1 rounded-full text-orange-700 bg-orange-50 border border-orange-100">
-              Creator
+            <span className="hidden sm:inline-flex text-[10px] font-bold px-2 py-0.5 rounded-full text-orange-700 bg-orange-50 border border-orange-100 tracking-wide uppercase">
+              Creator Lab
             </span>
           </Link>
 
